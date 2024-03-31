@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 
 
-public class ShopSlot : MonoBehaviour, IPointerUpHandler
+public class ShopSlot : MonoBehaviour, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public int slotNum;
     public GItemSO item;
@@ -17,10 +17,15 @@ public class ShopSlot : MonoBehaviour, IPointerUpHandler
     public GameObject Background;
     public InventoryUI inventoryUI;
     public bool SoldOut = false;
+    private SlotToolTip slotToolTip;
 
     public void Init(InventoryUI Iui)
     {
         inventoryUI = Iui;
+    }
+    public void Awake()
+    {
+        slotToolTip = FindObjectOfType<SlotToolTip>();
     }
     
     public void UpdateSlotUI()
@@ -97,5 +102,18 @@ public class ShopSlot : MonoBehaviour, IPointerUpHandler
                 Debug.Log("인벤토리가 가득 찼습니다.");
             }
         }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (eventData.pointerDrag == null && item != null)
+        {
+            slotToolTip.ShowToolTip(item ,transform.position);
+        }
+    }
+    
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        slotToolTip.HideToolTip();
     }
 }

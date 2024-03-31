@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
 public class FactionManager : MonoBehaviour
 {
     public List<Faction> allFactions; // 모든 세력을 리스트로 관리
@@ -27,6 +29,37 @@ public class FactionManager : MonoBehaviour
 
     // singleton 패턴 Don't Destroy On Load
     public static FactionManager instance;
+
+    void OnEnable()
+    {
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
+    }
+
+    void OnActiveSceneChanged(Scene oldScene, Scene newScene)
+    {
+        if (newScene.buildIndex == 0)
+        {
+            diplomacyManager = FindObjectOfType<DiplomacyManager>();
+            factionSelectionPanel = GameObject.Find("SelectFactionPanel");
+            factionDropdown = GameObject.Find("SelectFaction").GetComponent<Dropdown>();
+            turnText = GameObject.Find("Turn").GetComponent<Text>();
+            goldText = GameObject.Find("Gold").GetComponent<Text>();
+            if(playerFactionSelected)
+            {
+                factionSelectionPanel.SetActive(false);
+            }
+        }
+        else
+        {
+            diplomacyManager = null;
+            factionSelectionPanel = null;
+            factionDropdown = null;
+            turnText = null;
+            goldText = null;
+        }
+            
+    }
+
     void Awake()
     {
         if (instance == null)
@@ -51,8 +84,8 @@ public class FactionManager : MonoBehaviour
     void Start()
     {
         InitializeDiplomacy();
-        AssignGeneralsToAllFactions();
         SetPlayerFaction(factionDropdown);
+        
     }
     void Update()
     {
@@ -167,6 +200,14 @@ public class FactionManager : MonoBehaviour
     {
         return playerFaction;
     }
+    public Faction GetFactionByRegionName(string regionName)
+    {
+        if (regionToFactionMap.ContainsKey(regionName))
+        {
+            return regionToFactionMap[regionName];
+        }
+        return null;
+    }
     public void ConfirmFactionSelection()
     {
         Debug.Log("플레이어 세력이 " + playerFaction.factionName + "으로 확정되었습니다.");
@@ -177,6 +218,7 @@ public class FactionManager : MonoBehaviour
         // 패널을 비활성화하여 화면에서 제거
         factionSelectionPanel.SetActive(false);
         playerFactionSelected = true;
+        generalManager.InitGeneral();
     }
     private void InitializeDiplomacy()
     {
@@ -197,13 +239,6 @@ public class FactionManager : MonoBehaviour
             goldText.text = "Gold: " + playerFaction.gold; // 플레이어 세력의 금을 표시
         }
     }
-    private void AssignGeneralsToAllFactions()//세력에 무장들 할당
-    {
-        foreach (var faction in allFactions)
-        {
-            //List<Generals> factionGenerals = generalManager.GetGeneralsByFaction(faction.factionName);
-            //faction.generalsCodes = factionGenerals.Select(general => general.Code).ToList();
-        }
-    }
+    
     
 }

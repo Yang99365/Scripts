@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Inventory : MonoBehaviour
 {
     public List<GItemSO> items = new List<GItemSO>();
-    //아이템이 아닌 UI를 담는 리스트?? << 이게 뭔소리야
+    
 
     public delegate void OnItemChanged();
     public OnItemChanged onItemChangedCallback;
@@ -24,6 +25,27 @@ public class Inventory : MonoBehaviour
         { ItemType.Consumable, 2 },
         { ItemType.Ownable, 3 }
     };
+
+    void OnEnable()
+    {
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
+    }
+
+    void OnActiveSceneChanged(Scene oldScene, Scene newScene)
+    {
+        if (newScene.buildIndex == 0)
+        {
+            enableRemove = GameObject.Find("EnableRemove").GetComponent<Toggle>();
+            itemContent = GameObject.Find("ItemContent").transform;
+
+        }
+        else
+        {
+            enableRemove = null;
+            itemContent = null;
+        }
+            
+    }
 
 
     #region Singleton
@@ -108,34 +130,35 @@ public class Inventory : MonoBehaviour
         onItemChangedCallback?.Invoke();
         return isAdded;
     }
-    public bool Add(GItemSO item, int amount)
+    public bool Add(GItemSO item, int amount) // 장비템(스택불가능)일 경우엔 amount만큼 호출
     {
-        bool isAdded;
+        bool isAdded = false;
+        
         if (item.isStackable) // 아이템이 스택 가능한 경우
         {
             isAdded = AddStackableItem(item, amount);
         }
         else // 스택 불가능한 경우
         {
+            for (int i = 0; i < amount; i++)
+            {
                 // 빈 슬롯 찾기
-            int emptySlotIndex = items.FindIndex(x => x == null);
-            if (emptySlotIndex == -1 )//&& items.Count >= space)
-            {
-                isFull = true;
-                Debug.Log("공간이 모자라 아이템 휙득에 실패했습니다.");
-                return false;
+                int emptySlotIndex = items.FindIndex(x => x == null);
+                if (emptySlotIndex == -1 )//&& items.Count >= space)
+                {
+                    isFull = true;
+                    Debug.Log("공간이 모자라 아이템 휙득에 실패했습니다.");
+                    isAdded = false;
+                    //return false;
+                }
+                else
+                {
+                    // 빈 슬롯에 아이템 추가
+                    items[emptySlotIndex] = Instantiate(item);
+                    isAdded = true;
+                }           
             }
-            if (emptySlotIndex != -1)
-            {
-                // 빈 슬롯에 아이템 추가
-                items[emptySlotIndex] = Instantiate(item);
-            }
-            else
-            {
-                // 리스트에 아이템 추가
-                items.Add(Instantiate(item));
-            }
-            isAdded = true;
+            
         }
 
         if (isAdded)
@@ -212,12 +235,14 @@ public class Inventory : MonoBehaviour
         return true;
     }
 
+    /*
     public void Remove(GItemSO item)
     {
         // 해당 슬롯의 아이템을 비운다.
         if (onItemChangedCallback != null)
             onItemChangedCallback.Invoke();
     }
+    */
 
     public void EnableItemRemove()
     {
@@ -239,6 +264,7 @@ public class Inventory : MonoBehaviour
     public void RemoveItem(int index)
     {
         items[index] = null;
+        SpaceFull();
         if (onItemChangedCallback != null)
             onItemChangedCallback.Invoke();
     }

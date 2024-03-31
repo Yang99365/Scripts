@@ -2,10 +2,13 @@ using System.Collections.Generic;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class RegionManager : MonoBehaviour
 {
     public List<Region> allRegions;
+    public Region selectedRegion;
     public Image mapImage;
 
     public Texture2D colorMapTexture;
@@ -18,14 +21,48 @@ public class RegionManager : MonoBehaviour
     [SerializeField]
     private Dictionary<Color, string> colorToRegionMap = new Dictionary<Color, string>();
 
+    public static RegionManager instance;
+    void OnEnable()
+    {
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
+    }
+
+    void OnActiveSceneChanged(Scene oldScene, Scene newScene)
+    {
+        if (newScene.buildIndex == 0)
+        {
+            infoPopup = FindObjectOfType<RegionInfoPopup>();
+            mapImage = GameObject.Find("Map").GetComponent<Image>();
+           
+        }
+        else
+        {
+            infoPopup = null;
+            mapImage = null;
+        }
+            
+    }
     private void Awake()
     {
+       
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+
         factionManager = FindObjectOfType<FactionManager>();
         infoPopup = FindObjectOfType<RegionInfoPopup>();
 
         InitializeColorToRegionMap();
 
-        mapImage = GetComponent<Image>();
+        //mapImage = GetComponent<Image>();
         Material mat = mapImage.material;
         // 이미지 컴포넌트 및 스프라이트에서 Texture2D 얻기
 
@@ -38,14 +75,15 @@ public class RegionManager : MonoBehaviour
     void Start()
     {
         UpdateRegionColorsAccordingToFactions();
-        if (infoPopup != null)
-        {
-            infoPopup.HidePopup();
-        }
+        
     }
     
     public void OnClickRegion()
     {
+        if(factionManager.playerFactionSelected == false)
+        {
+            return;
+        }
         Debug.Log("Clicked on Map");
         Vector2 localPoint;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(

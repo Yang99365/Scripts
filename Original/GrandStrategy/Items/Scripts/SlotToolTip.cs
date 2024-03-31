@@ -21,7 +21,7 @@ public class SlotToolTip : MonoBehaviour
         toolTip.transform.position = pos;
         itemNameText.text = item.itemName;
         if(item.Type == ItemType.Equipment)
-        { // 설명텍스트에 임시로 일단 장비타입과 장비슬롯을 추가, 
+        { // 설명텍스트에 임시로 일단 장비타입과 장비슬롯을 추가
           // 나중에 장비타입과 장비슬롯의 설명은 다른 텍스트로 분리해서 추가해야함(오른쪽위 구석이나 아래쪽 구석에)
             EquipItem equipItem = item as EquipItem; // Cast item to EquipItem
             itemDescriptionText.text = item.Description + "\n" + "희귀도" + item.rarityType + 
@@ -42,15 +42,15 @@ public class SlotToolTip : MonoBehaviour
 
         if (item.Type == ItemType.Consumable)
         {
-            itemUseText.text = "우클릭 후 사용할 무장 선택";
+            itemUseText.text = "우클릭해서 사용할 무장 선택";
         }
         else if (item.Type == ItemType.Equipment)
         {
-            itemUseText.text = "우클릭 후 장착할 무장 선택";
+            itemUseText.text = "우클릭으로 장착할 무장 선택";
         }
         else if (item.Type == ItemType.Ownable)
         {
-            itemUseText.text = "인벤토리에 보유시 상시 효과";
+            itemUseText.text = "인벤토리에 보유 시 효과 발동";
         }
         else
         {

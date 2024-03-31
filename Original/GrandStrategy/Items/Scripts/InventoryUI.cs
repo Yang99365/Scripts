@@ -13,9 +13,8 @@ public class InventoryUI : MonoBehaviour
     public Toggle consumableToggle;
     public Toggle ownableToggle;
     public GameObject inventoryPanel;
-    Inventory inventory;
 
-    public FactionManager factionManager;
+    //public FactionManager factionManager;//싱글톤으로 바꿧으니까 이거 필요없어짐
     
     public bool inventoryActive = false;
     public Slot[] slots;
@@ -23,6 +22,7 @@ public class InventoryUI : MonoBehaviour
     public Transform slotHolder;
     public TextMeshProUGUI sizeTxt;
 
+    /*
     // singleton
     #region Singleton
     public static InventoryUI instance;
@@ -36,12 +36,15 @@ public class InventoryUI : MonoBehaviour
         instance = this;
     }
     #endregion
+    */
     
 
     private void Start() {
-        inventory = Inventory.instance;
-        inventory.onItemChangedCallback += UpdateUI;
+        
+        Inventory.instance.onItemChangedCallback += UpdateUI;
         inventoryPanel.SetActive(inventoryActive);
+
+        //shop
         shopPanel.SetActive(isShopActive);
         slots = slotHolder.GetComponentsInChildren<Slot>();
         shopSlots = shopSlotHolder.GetComponentsInChildren<ShopSlot>();
@@ -62,7 +65,7 @@ public class InventoryUI : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I)&&factionManager.playerFactionSelected)
+        if (Input.GetKeyDown(KeyCode.I)&&FactionManager.instance.playerFactionSelected)
         {
             inventoryActive = !inventoryActive;
             inventoryPanel.SetActive(inventoryActive);
@@ -113,35 +116,29 @@ public class InventoryUI : MonoBehaviour
             toggleImage.color = color;
         }
     }
-    public void OpenInventory()
+    public void ControlInventory()
     {
-        if(factionManager.playerFactionSelected)
+        if(FactionManager.instance.playerFactionSelected)
         {
             inventoryActive = !inventoryActive;
             inventoryPanel.SetActive(inventoryActive);
         }
     }
-    public void CloseInventory()
-    {
-        inventoryActive = false;
-        inventoryPanel.SetActive(inventoryActive);
-    }
-  
 
     void UpdateUI()
     {
         for (int i = 0; i < slots.Length; i++)
         {
-            if (i < inventory.items.Count)
+            if (i < Inventory.instance.items.Count)
             {
-                slots[i].UpdateSlotUI(inventory.items[i]); // 항상 UI 업데이트 수행
+                slots[i].UpdateSlotUI(Inventory.instance.items[i]); // 항상 UI 업데이트 수행
             }
             else
             {
                 slots[i].ClearSlot(); // 아이템이 없어진 슬롯 클리어
             }
             // inventory.items 리스트에 Null이 아닌 아이템 / 사이즈를 sizeTxt에 표시
-            sizeTxt.text = inventory.items.FindAll(x => x != null).Count + " / " + inventory.space;
+            sizeTxt.text = Inventory.instance.items.FindAll(x => x != null).Count + " / " + Inventory.instance.space;
         }
     }
 

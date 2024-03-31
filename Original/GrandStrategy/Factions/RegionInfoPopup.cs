@@ -36,6 +36,8 @@ public class RegionInfoPopup : MonoBehaviour
         buildBarrackButton.GetComponent<Button>().onClick.AddListener(() => UpgradeBuilding("Barrack"));
         buildMineButton.GetComponent<Button>().onClick.AddListener(() => UpgradeBuilding("Mine"));
         landmarkBuildButton.GetComponent<Button>().onClick.AddListener(() => UpgradeBuilding("Landmark"));
+
+        HidePopup();
     }
 
     // 팝업창을 보여주는 함수
@@ -51,6 +53,7 @@ public class RegionInfoPopup : MonoBehaviour
         Faction regionFaction = regionManager.GetRegionFaction(regionName);
         Faction playerFaction = factionManager.GetPlayerFaction();
         Region currentRegion = regionManager.GetRegionByName(regionName); // 지역 정보를 가져옵니다.
+        regionManager.selectedRegion = currentRegion;
         // 플레이어가 소유한 세력의 지역을 클릭한 경우 버튼을 보이지 않게 합니다.
         if(regionFaction == playerFaction)
         {
@@ -77,6 +80,7 @@ public class RegionInfoPopup : MonoBehaviour
     // 팝업창을 숨기는 함수
     public void HidePopup()
     {
+        regionManager.selectedRegion = null;
         popupPanel.SetActive(false);
     }
 
@@ -88,11 +92,7 @@ public class RegionInfoPopup : MonoBehaviour
         diplomacyManager.UpdateDiplomacyStatus(factionName, playerFactionName, DiplomacyStatus.War);
         HidePopup();
     }
-    public void War()
-    {
-        // 전쟁 시스템 작동 부대작성 화면 띄우기
-
-    }
+    
     public void MakeTruce()
     {
         // 위와 동일하게 구현

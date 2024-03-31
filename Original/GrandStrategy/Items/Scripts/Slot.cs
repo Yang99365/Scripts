@@ -1,3 +1,4 @@
+using System.Net;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class Slot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, 
 IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    public GeneralListUI generalListUI;
     //shop
     public bool isShopMode; // 참이면 판매모드, 거짓이면 구매모드
     public bool isSell=false;
@@ -31,14 +33,14 @@ IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitH
     
     public bool isInteractable = true;
 
-    // private GeneralManager generalManager; // 장군의 장비창에 장비를 옮기기 위해 장군의 장비창을 참조한다.
+    
     
     private void Awake()
     {
         canvas = FindObjectOfType<Canvas>(); // 캔버스 찾기
         slotToolTip = FindObjectOfType<SlotToolTip>();
-        
-        // generalManager = FindObjectOfType<GeneralManager>();
+        generalListUI = FindObjectOfType<GeneralListUI>();
+        DontDestroyOnLoad(gameObject);
     }
     public void UpdateSlotUI(GItemSO newitem)
     {
@@ -124,11 +126,33 @@ IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitH
                     {
                         if (item.Type == ItemType.Equipment)
                         {
-                            // generalManager.Equip(item);
-                            // ClearSlot();
-                            // Inventory.instance.RemoveItem(slotNum); 위에 ClearSlot과 이 코드는 Equip()함수에서 구현한다.
-                            // return;
-                            Debug.Log("장비를 장착했습니다.");
+                            
+                            if (generalListUI.SelectedSlot==null)
+                            {
+                                Debug.Log("장군을 선택해주세요.");
+                                return;
+                            }
+                            if (generalListUI.SelectedSlot.general != null)
+                            {
+                                GeneralBase general = generalListUI.SelectedSlot.general;
+                                
+                                if (general.equipment1 == null || general.equipment2 == null)
+                                {
+                                    general.EquipItem(item.Code);
+                                }
+                                else if (general.equipment1 != null && general.equipment2 != null)
+                                {
+                                    Debug.Log("모든 장비 슬롯이 이미 사용 중입니다.");
+                                    return;
+                                }
+                                
+                                ClearSlot();
+                                Inventory.instance.RemoveItem(slotNum); 
+                                Debug.Log("장비를 장착했습니다.");
+                                generalListUI.generalDescUI.SetDescription(general.portrait, general.name, general.atk, general.def, general.spd, null, null,null, general.equipment1, general.equipment2);
+                                return;
+                            }
+                            
                         }
                         if (item.Type == ItemType.Consumable)
                         {

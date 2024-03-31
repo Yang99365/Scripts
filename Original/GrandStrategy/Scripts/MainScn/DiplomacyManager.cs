@@ -13,8 +13,20 @@ public class DiplomacyManager : MonoBehaviour
 {
     public Dictionary<string, Dictionary<string, DiplomacyStatus>> diplomacyStatus;
 
+    public static DiplomacyManager instance;
+
     void Awake()
     {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
         diplomacyStatus = new Dictionary<string, Dictionary<string, DiplomacyStatus>>();
     }
 

@@ -10,6 +10,7 @@ public class ShopData : MonoBehaviour
 
     void Start()
     { // 상점용 임시 스크립트
+        itemController = GameObject.Find("ItemManager").GetComponent<ItemController>();
         stocks.Add(itemController.items[0]);
         stocks.Add(itemController.items[1]);
         stocks.Add(itemController.items[2]);
